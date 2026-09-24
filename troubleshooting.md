@@ -58,3 +58,7 @@ curl -4 https://api.ipify.org
 
 На Windows используйте `Get-NetIPAddress`, `Get-NetRoute`, `Get-NetAdapter`, `Test-NetConnection <ADDITIONAL_IP> -Port 22` (или нужный порт) и правила Windows Firewall. Если локальная конфигурация верна, а внешнее соединение не проходит, передайте в поддержку IP услуги, ОС, снимки адресов и маршрутов, время проверки, исходную сеть и результаты с обеих сторон. Доступность из всех сетей и стран не гарантируется; вывод о причине делается после диагностики. [FAQ](faq.md).
 
+
+## FreeBSD
+
+Проверьте `ifconfig -a`, `netstat -rn -f inet`, записи `ifconfig_<INTERFACE>_aliasN` в `/etc/rc.conf`, `sockstat -4 -l` и действующий firewall (`pfctl -sr`, если используется PF). Проверяйте входящий ping и SSH с другого устройства. При потере SSH войдите через VNC и восстановите `/etc/rc.conf.bak` по [инструкции FreeBSD](freebsd/freebsd-13.md). Не применяйте к FreeBSD команды `ip`, `systemctl` или `/etc/network/interfaces`.

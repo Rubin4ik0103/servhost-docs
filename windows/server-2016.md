@@ -1,4 +1,4 @@
-# Windows Server 2019: дополнительный IPv4
+# Windows Server 2016: дополнительный IPv4
 
 ## Перед началом
 

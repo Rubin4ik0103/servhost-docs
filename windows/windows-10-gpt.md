@@ -1,4 +1,4 @@
-# Windows Server 2019: дополнительный IPv4
+# Windows 10 GPT: дополнительный IPv4
 
 ## Перед началом
 
@@ -58,7 +58,7 @@ Test-Connection <GATEWAY> -Count 3
 Invoke-RestMethod https://api.ipify.org
 ```
 
-С другой машины проверьте `ping <ADDITIONAL_IP>` и `Test-NetConnection <ADDITIONAL_IP> -Port 22` для SSH либо `-Port 3389` для RDP, если сервис установлен, запущен и разрешён firewall. ICMP может быть запрещён. Исходящий IP может остаться основным.
+С другой машины проверьте `ping <ADDITIONAL_IP>` и `Test-NetConnection <ADDITIONAL_IP> -Port 22` для SSH либо `-Port 3389` для RDP, если он доступен и сервис установлен, запущен и разрешён firewall. ICMP может быть запрещён. Исходящий IP может остаться основным.
 
 ## Откат и потеря доступа
 

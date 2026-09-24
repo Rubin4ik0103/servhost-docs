@@ -17,3 +17,6 @@
 - [Microsoft New-NetIPAddress](https://learn.microsoft.com/en-us/powershell/module/nettcpip/new-netipaddress)
 - [Microsoft Get-NetIPAddress](https://learn.microsoft.com/en-us/powershell/module/nettcpip/get-netipaddress)
 
+- [FreeBSD Handbook: network](https://docs.freebsd.org/en/books/handbook/network/)
+- [FreeBSD Handbook: IP aliases](https://docs.freebsd.org/en/books/handbook/advanced-networking/)
+- [Oracle Linux 8/9: NetworkManager](https://docs.oracle.com/en-us/iaas/oracle-linux/network/network-network-configuration-overview.htm)

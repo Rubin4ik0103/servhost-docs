@@ -33,7 +33,7 @@
 
 ## Настройка в Linux
 
-На наших образах сетевые настройки обслуживает `networking`. Проверьте активную службу и найдите блок нужного интерфейса:
+Для Linux-инструкций проверьте, что сетевые настройки обслуживает `networking`, и найдите блок нужного интерфейса:
 
 ```bash
 ip -br a
@@ -43,7 +43,7 @@ sudo cat /etc/network/interfaces
 sudo ls -l /etc/network/interfaces.d
 ```
 
-Файл с блоком `iface <INTERFACE> inet ...` может быть `/etc/network/interfaces` или подключённый файл в `interfaces.d`. Не меняйте сеть, если нужный блок или активная служба не найдены. Следуйте [инструкции по networking](linux/interfaces.md).
+Файл с блоком `iface <INTERFACE> inet ...` может быть `/etc/network/interfaces` или подключённый файл в `interfaces.d`. Не меняйте сеть, если нужный блок или активная служба не найдены. Следуйте [инструкции по networking](linux/interfaces.md). Для FreeBSD используйте отдельную страницу [FreeBSD 13](freebsd/freebsd-13.md) или [FreeBSD 14](freebsd/freebsd-14.md); Windows настраивается через свойства адаптера.
 
 ## Проверка после применения
 

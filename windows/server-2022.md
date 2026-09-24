@@ -19,6 +19,7 @@ Get-NetAdapter
 Get-NetIPAddress -AddressFamily IPv4 | Format-Table InterfaceAlias,IPAddress,PrefixLength,SkipAsSource
 Get-NetRoute -AddressFamily IPv4 | Sort-Object RouteMetric | Format-Table InterfaceAlias,DestinationPrefix,NextHop,RouteMetric
 Get-DnsClientServerAddress -AddressFamily IPv4
+Get-NetIPInterface -AddressFamily IPv4 | Format-Table InterfaceAlias,Dhcp
 ```
 
 Найдите `<INTERFACE>` с `<MAIN_IP>`. Сохраните вывод в файл или скриншот. Конфигурация хранится в настройках адаптера Windows, единого файла вроде Linux YAML нет. Экспортируйте текущие настройки для backup:
@@ -35,16 +36,18 @@ Get-NetRoute -InterfaceAlias "<INTERFACE>" | Export-Clixml C:\routes-before.xml
 3. В разделе **IP addresses** нажмите **Add**, введите `<ADDITIONAL_IP>` и маску, соответствующую выданному `<PREFIX>`. Сохраните окна.
 4. Не удаляйте `<MAIN_IP>` и не меняйте действующий gateway. В разделе gateway новый адрес обычно не требуется.
 
-Если IPv4 получает основной адрес через DHCP, Windows может не предложить добавить статический второй адрес в том же окне без изменения режима. Не переключайте DHCP на static вслепую: используйте PowerShell ниже и проверьте конфигурацию из консоли.
+Если основной IPv4 получен через DHCP, не переключайте адаптер на статическую адресацию и не выполняйте приведённую ниже команду: она отключит DHCP. Сначала уточните у поддержки безопасную схему для этого образа.
 
 ## Вариант 2: PowerShell
+
+> Выполняйте команду только если `Get-NetIPInterface` показывает `Dhcp Disabled` для IPv4 на выбранном адаптере. `New-NetIPAddress` автоматически отключает DHCP, если он включён, что может убрать основной адрес и доступ.
 
 ```powershell
 New-NetIPAddress -InterfaceAlias "<INTERFACE>" -IPAddress "<ADDITIONAL_IP>" -PrefixLength <PREFIX> -SkipAsSource $true
 Get-NetIPAddress -InterfaceAlias "<INTERFACE>" -AddressFamily IPv4
 ```
 
-`-SkipAsSource $true` помогает сохранить выбор основного IP для обычных исходящих соединений. Новый gateway **не указывайте**, если провайдер не выдал отдельную схему маршрутизации. При DHCP проверьте поведение адреса после перезапуска из консоли.
+`-SkipAsSource $true` помогает сохранить выбор основного IP для обычных исходящих соединений. Новый gateway **не указывайте**, если провайдер не выдал отдельную схему маршрутизации. При DHCP эту команду не применяйте.
 
 ## Проверка
 

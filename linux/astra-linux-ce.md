@@ -1,4 +1,4 @@
-# Ubuntu 22.04: дополнительный IPv4
+# Astra Linux Common Edition: дополнительный IPv4
 
 ## Перед началом
 
@@ -20,7 +20,7 @@ sudo cat /etc/network/interfaces
 sudo grep -R -n -E '^(auto|allow-hotplug|iface|source|source-directory)' /etc/network/interfaces.d 2>/dev/null
 ```
 
-Найдите интерфейс с `<MAIN_IP>` и действующий default gateway. Проверьте, что на этом образе используется `networking`: найдите его блок `iface <INTERFACE> inet ...` в `/etc/network/interfaces` или подключённом файле. Имя может быть `ens3`, но берите фактическое. Если служба неактивна или блок не найден, не меняйте сеть по этой инструкции: уточните конфигурацию конкретного образа.
+Найдите интерфейс с `<MAIN_IP>` и действующий default gateway. Для этого образа проверьте, что используется `networking`: найдите его блок `iface <INTERFACE> inet ...` в `/etc/network/interfaces` или подключённом файле. Имя может быть `ens3`, но берите фактическое. Если служба неактивна или блок не найден, не меняйте сеть по этой инструкции: уточните конфигурацию конкретного образа.
 
 ## Добавьте дополнительный IP
 
