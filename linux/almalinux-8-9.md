@@ -3,66 +3,76 @@
 ## Перед началом
 
 - Убедитесь, что доступна VNC или веб-консоль, и проверьте вход в неё.
-- Сохраните резервную копию сетевого файла или профиля.
-- Запишите текущие `ip a` и `ip route` (Windows: `Get-NetIPAddress` и `Get-NetRoute`).
+- Сохраните резервную копию активного сетевого профиля.
+- Запишите текущие `ip a` и `ip route`.
 - Не удаляйте основной IP. Выполняйте действия по одному.
-- Настройка внутри ОС выполняется клиентом самостоятельно. Держите текущую SSH/RDP-сессию открытой и проверяйте новую сессию отдельно.
+- Настройка внутри ОС выполняется клиентом самостоятельно. Держите текущую SSH-сессию открытой и проверяйте новую отдельно.
 
-> Настройка сети может прервать удалённый доступ. Если нет работающей консоли, сначала обеспечьте её доступность.
+> Изменение сети может прервать SSH. Работайте через VNC/консоль, если не можете восстановить подключение другим способом.
 
-## Проверьте интерфейс и действующую конфигурацию
+## Определите интерфейс и службу
 
 ```bash
 ip -br a
 ip route
+systemctl is-active NetworkManager
 systemctl is-active networking
-sudo cat /etc/network/interfaces
-sudo grep -R -n -E '^(auto|allow-hotplug|iface|source|source-directory)' /etc/network/interfaces.d 2>/dev/null
+nmcli device status
+nmcli connection show --active
 ```
 
-Найдите интерфейс с `<MAIN_IP>` и действующий default gateway. Проверьте, что на этом образе используется `networking`: найдите его блок `iface <INTERFACE> inet ...` в `/etc/network/interfaces` или подключённом файле. Имя может быть `ens3`, но берите фактическое. Если служба неактивна или блок не найден, не меняйте сеть по этой инструкции: уточните конфигурацию конкретного образа.
+Найдите `<INTERFACE>` с `<MAIN_IP>`. Если `NetworkManager` активен и `nmcli device status` показывает этот интерфейс как **connected** с активным профилем, выполните следующие шаги. Наличие программы `nmcli` само по себе этого не доказывает.
 
-## Добавьте дополнительный IP
+Если интерфейс действительно обслуживается `networking` и его блок `iface <INTERFACE> inet ...` найден в `/etc/network/interfaces` или подключённом файле, используйте [инструкцию networking](interfaces.md). Если ни один вариант не подтверждён, не меняйте сеть по этим примерам и уточните конфигурацию образа.
 
-Сохраните backup файла, в котором находится блок интерфейса. Пример для основного файла:
+## Найдите и сохраните активный профиль NetworkManager
 
 ```bash
-sudo cp -a /etc/network/interfaces /etc/network/interfaces.bak
+nmcli -f GENERAL.CONNECTION,GENERAL.DEVICE device show <INTERFACE>
+nmcli -f connection.id,connection.uuid,ipv4.method,ipv4.addresses,ipv4.gateway connection show "<PROFILE>"
+nmcli connection show "<PROFILE>" > profile-before.txt
 ```
 
-Если блок находится в `/etc/network/interfaces.d/<ACTUAL_FILE>`, сделайте backup именно этого файла. В существующий блок интерфейса добавьте:
+Подставьте точное имя `<PROFILE>`, связанного с `<INTERFACE>`. По UUID из вывода найдите файл профиля в `/etc/NetworkManager/system-connections/` или, для некоторых образов AlmaLinux 8, в `/etc/sysconfig/network-scripts/`. Не правьте другой профиль и не угадывайте имя файла.
 
-```text
-    up ip addr add <ADDITIONAL_IP>/<PREFIX> dev <INTERFACE>
-    down ip addr del <ADDITIONAL_IP>/<PREFIX> dev <INTERFACE> || true
+```bash
+sudo grep -R -l -F "<PROFILE_UUID>" /etc/NetworkManager/system-connections /etc/sysconfig/network-scripts 2>/dev/null
+sudo cp -a <ACTUAL_FILE> <ACTUAL_FILE>.bak
 ```
 
-Сохраните основной IP, текущий gateway и другие строки без изменений. `<PREFIX>` возьмите из параметров услуги или уточните в поддержке. Подробный разбор файла и отката: [настройка networking](interfaces.md).
+Если файл активного профиля не найден или он создаётся автоматически, остановитесь и выясните источник конфигурации до изменения. Сохраните `profile-before.txt` в безопасном месте: вывод профиля может содержать сетевые параметры.
+
+## Добавьте адрес без замены основного
+
+Проверьте, что `<ADDITIONAL_IP>` ещё не присутствует в профиле и `ip -br a`. Возьмите `<PREFIX>` из параметров услуги, не копируйте его с основного IP наугад.
+
+```bash
+sudo nmcli connection modify "<PROFILE>" +ipv4.addresses "<ADDITIONAL_IP>/<PREFIX>"
+nmcli -f ipv4.method,ipv4.addresses,ipv4.gateway connection show "<PROFILE>"
+```
+
+Знак `+` добавляет адрес к существующим; не используйте `ipv4.addresses` без `+`, так как это может заменить основной адрес. Не меняйте `ipv4.method`, DNS и gateway.
 
 ## Примените и проверьте
 
-Через VNC/консоль добавьте адрес к работающему интерфейсу без его перезапуска:
-
 ```bash
-sudo ip addr add <ADDITIONAL_IP>/<PREFIX> dev <INTERFACE>
+sudo nmcli device reapply <INTERFACE>
 ip -br a
 ip route
-ping -c 3 <GATEWAY>
 curl -4 https://api.ipify.org
 ```
 
-Держите старую SSH-сессию открытой. Если default gateway в текущем маршруте отсутствует, пропустите ping до него и не придумывайте его адрес.
+Если `reapply` сообщает, что изменение нельзя применить, не выполняйте `connection down/up` через единственную SSH-сессию. Переподключайте профиль только через VNC/консоль после сохранения backup. С другого устройства проверьте `ping <ADDITIONAL_IP>` и `ssh <USER>@<ADDITIONAL_IP>`. ICMP может быть закрыт. `curl` без выбора source IP может показать основной адрес.
 
-С другого устройства проверьте `ping <ADDITIONAL_IP>` и `ssh <USER>@<ADDITIONAL_IP>`. ICMP может быть закрыт. Проверка `curl` показывает исходящий адрес по текущему маршруту: он может остаться основным. Не используйте `ifdown` по единственному SSH-подключению. Сохранённые строки применятся при следующем штатном поднятии интерфейса.
+## Откат и потеря SSH
 
-## Откат при потере SSH
-
-Войдите через VNC/веб-консоль, восстановите backup конфигурационного файла и удалите только дополнительный адрес, если он уже добавлен:
+Через VNC/веб-консоль удалите только добавленный адрес из профиля и перепримените его:
 
 ```bash
-sudo ip addr del <ADDITIONAL_IP>/<PREFIX> dev <INTERFACE>
+sudo nmcli connection modify "<PROFILE>" -ipv4.addresses "<ADDITIONAL_IP>/<PREFIX>"
+sudo nmcli device reapply <INTERFACE>
 ip -br a
 ip route
 ```
 
-Основной IP не удаляйте. Проверьте [диагностику](../troubleshooting.md).
+Если профиль повреждён, восстановите копию `<ACTUAL_FILE>.bak` через консоль, выполните `sudo nmcli connection load <ACTUAL_FILE>` и перепримените интерфейс. Не удаляйте `<MAIN_IP>`. Подробнее: [диагностика](../troubleshooting.md).

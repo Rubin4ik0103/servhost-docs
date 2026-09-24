@@ -27,6 +27,8 @@ ufw status
 iptables -L -n
 nft list ruleset
 systemctl status networking
+systemctl status NetworkManager
+nmcli device status
 ping -c 3 <GATEWAY>
 traceroute <ADDITIONAL_IP>
 mtr <ADDITIONAL_IP>
@@ -38,7 +40,7 @@ curl -4 https://api.ipify.org
 
 | Симптом | Что проверить и сделать |
 | --- | --- |
-| IP есть в панели, но нет в `ip a` | Адрес назначен услуге, но не добавлен в ОС. Проверьте `networking` и файл интерфейса на странице Linux-образа, добавьте адрес и проверьте `ip -br a`. |
+| IP есть в панели, но нет в `ip a` | Адрес назначен услуге, но не добавлен в ОС. Определите службу по странице своей ОС: для AlmaLinux проверьте NetworkManager, для остальных Linux-образов - `networking` и файл интерфейса. Затем добавьте адрес и проверьте `ip -br a`. |
 | IP есть в `ip a`, но нет ping | Проверьте `<PREFIX>`, `ip route`, состояние интерфейса, ICMP/firewall и проверку из другой сети. ICMP может быть закрыт. |
 | Ping работает, SSH нет | `ss -lntp`, `systemctl status ssh` или `sshd`, firewall и порт. Проверьте `sshd_config`: `ListenAddress` может ограничивать основной IP. |
 | SSH доступен только по основному IP | Проверьте привязку sshd, firewall для нового адреса, маршрут ответов `ip route get <CLIENT_IP> from <ADDITIONAL_IP>` и внешнюю проверку порта. |

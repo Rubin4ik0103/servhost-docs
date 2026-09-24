@@ -18,3 +18,5 @@
 - [Microsoft Get-NetIPAddress](https://learn.microsoft.com/en-us/powershell/module/nettcpip/get-netipaddress)
 - [FreeBSD Handbook: network](https://docs.freebsd.org/en/books/handbook/network/)
 - [FreeBSD Handbook: IP aliases](https://docs.freebsd.org/en/books/handbook/advanced-networking/)
+- [AlmaLinux: After-Installation Guide (Network Manager)](https://wiki.almalinux.org/documentation/after-installation-guide.html)
+- [NetworkManager: nmcli](https://networkmanager.dev/docs/api/latest/nmcli.html)
