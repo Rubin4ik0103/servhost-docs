@@ -21,8 +21,10 @@ sysrc -a | grep -E '^(ifconfig_|defaultrouter)'
 
 ## Сохраните файл и добавьте адрес
 
+Команды изменения сети ниже выполняйте от `root` через VNC/веб-консоль (`su -` при необходимости).
+
 ```sh
-sudo cp -p /etc/rc.conf /etc/rc.conf.bak
+cp -p /etc/rc.conf /etc/rc.conf.bak
 ```
 
 В `/etc/rc.conf` добавьте новую строку для **того же** интерфейса. Выберите свободный номер alias после проверки имеющихся `ifconfig_<INTERFACE>_aliasN`. Маску `<NETMASK>` получите из выданного `<PREFIX>`; не подставляйте `255.255.255.255` без подтверждения схемы адреса.
@@ -38,21 +40,23 @@ ifconfig_<INTERFACE>_alias0="inet <ADDITIONAL_IP> netmask <NETMASK>"
 Из VNC/веб-консоли добавьте IP без перезапуска интерфейса:
 
 ```sh
-sudo ifconfig <INTERFACE> inet <ADDITIONAL_IP> netmask <NETMASK> alias
+ifconfig <INTERFACE> inet <ADDITIONAL_IP> netmask <NETMASK> alias
 ifconfig <INTERFACE>
 netstat -rn -f inet
 ping -c 3 <GATEWAY>
 fetch -qo - https://api.ipify.org
 ```
 
-С другой машины проверьте `ping <ADDITIONAL_IP>` и `ssh <USER>@<ADDITIONAL_IP>`. ICMP может быть закрыт. `fetch` показывает обычный исходящий IP, который может остаться основным. Для проверки сохранения настройки после перезагрузки используйте консоль и резервную копию.
+Если default gateway в текущем маршруте отсутствует, пропустите ping до него и не придумывайте его адрес.
+
+С другой машины проверьте `ping <ADDITIONAL_IP>` и `ssh <USER>@<ADDITIONAL_IP>`. ICMP может быть закрыт. `fetch` показывает обычный исходящий IP, который может остаться основным. Проверяйте сохранение настройки после перезагрузки только при доступной консоли и сохранённой копии `/etc/rc.conf`.
 
 ## Откат и потеря SSH
 
 Через VNC удалите добавленную строку из `/etc/rc.conf` или восстановите backup. Удалите **только** дополнительный адрес из работающей системы:
 
 ```sh
-sudo ifconfig <INTERFACE> inet <ADDITIONAL_IP> -alias
+ifconfig <INTERFACE> inet <ADDITIONAL_IP> -alias
 ifconfig <INTERFACE>
 netstat -rn -f inet
 ```
